@@ -1,1 +1,100 @@
-
+[
+  {
+    "make": "Dodge",
+    "model": "Ram 1500",
+    "year": 2008,
+    "engine": "5.7L Hemi",
+    "gasketType": "oil_pan",
+    "partNumber": "OS30726R",
+    "geometry": {
+      "width": 320,
+      "height": 220,
+      "holes": 18,
+      "holePattern": []
+    }
+  },
+  {
+    "make": "Dodge",
+    "model": "Ram 1500",
+    "year": 2008,
+    "engine": "5.7L Hemi",
+    "gasketType": "head_gasket",
+    "partNumber": "HS26415PT",
+    "geometry": {
+      "width": 285,
+      "height": 195,
+      "holes": 6,
+      "holePattern": []
+    }
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "year": 2007,
+    "engine": "5.3L V8",
+    "gasketType": "oil_pan",
+    "partNumber": "OS30693R",
+    "geometry": {
+      "width": 315,
+      "height": 218,
+      "holes": 20,
+      "holePattern": []
+    }
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "year": 2007,
+    "engine": "5.3L V8",
+    "gasketType": "valve_cover",
+    "partNumber": "VS50504R",
+    "geometry": {
+      "width": 430,
+      "height": 135,
+      "holes": 8,
+      "holePattern": []
+    }
+  },
+  {
+    "make": "Ford",
+    "model": "F-150",
+    "year": 2011,
+    "engine": "5.0L V8",
+    "gasketType": "oil_pan",
+    "partNumber": "OS30754",
+    "geometry": {
+      "width": 318,
+      "height": 216,
+      "holes": 20,
+      "holePattern": []
+    }
+  },
+  {
+    "make": "Toyota",
+    "model": "Tundra",
+    "year": 2006,
+    "engine": "4.7L V8",
+    "gasketType": "oil_pan",
+    "partNumber": "OS30649",
+    "geometry": {
+      "width": 300,
+      "height": 210,
+      "holes": 20,
+      "holePattern": []
+    }
+  },
+  {
+    "make": "Honda",
+    "model": "Civic",
+    "year": 2010,
+    "engine": "1.8L",
+    "gasketType": "valve_cover",
+    "partNumber": "VS50773R",
+    "geometry": {
+      "width": 365,
+      "height": 120,
+      "holes": 8,
+      "holePattern": []
+    }
+  }
+]
