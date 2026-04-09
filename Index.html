@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gasket Maker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <h1>Gasket Maker</h1>
+      <p>Vehicle-based gasket catalog with SVG generation</p>
+    </header>
+
+    <main class="grid">
+      <section class="card">
+        <h2>Catalog Selector</h2>
+
+        <div class="field">
+          <label for="make">Make</label>
+          <select id="make"></select>
+        </div>
+
+        <div class="field">
+          <label for="model">Model</label>
+          <select id="model"></select>
+        </div>
+
+        <div class="field">
+          <label for="year">Year</label>
+          <select id="year"></select>
+        </div>
+
+        <div class="field">
+          <label for="engine">Engine</label>
+          <select id="engine"></select>
+        </div>
+
+        <div class="field">
+          <label for="type">Gasket Type</label>
+          <select id="type"></select>
+        </div>
+
+        <div class="field">
+          <label for="partNumber">Part Number</label>
+          <input id="partNumber" type="text" readonly />
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Geometry</h2>
+
+        <div class="field">
+          <label for="width">Width</label>
+          <input id="width" type="number" step="0.1" />
+        </div>
+
+        <div class="field">
+          <label for="height">Height</label>
+          <input id="height" type="number" step="0.1" />
+        </div>
+
+        <div class="field">
+          <label for="manualHoles">Hole Pattern</label>
+          <textarea
+            id="manualHoles"
+            rows="10"
+            placeholder="One hole per line: x,y,r"
+          ></textarea>
+        </div>
+
+        <div class="button-row">
+          <button id="generateBtn" type="button">Generate SVG</button>
+          <button id="downloadSvgBtn" type="button">Download SVG</button>
+        </div>
+
+        <div class="button-row">
+          <button id="importBtn" type="button">Import Database</button>
+          <button id="exportBtn" type="button">Export Database</button>
+        </div>
+      </section>
+
+      <section class="card preview-card">
+        <h2>SVG Preview</h2>
+        <div id="svgOutput" class="svg-preview"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
