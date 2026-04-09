@@ -1,0 +1,639 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gasket Maker Pro</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --panel: #121212;
+      --panel2: #191919;
+      --line: #2a2a2a;
+      --text: #e7fff7;
+      --muted: #9ad8c3;
+      --green: #00ff9d;
+      --pink: #ff00aa;
+      --blue: #00aaff;
+      --gold: #ffd166;
+      --red: #ff5c7a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, #090909, #111);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+    .wrap { max-width: 1220px; margin: 0 auto; padding: 16px; }
+    .hero {
+      background:
+        radial-gradient(circle at top right, rgba(255,0,170,.16), transparent 28%),
+        radial-gradient(circle at top left, rgba(0,255,157,.10), transparent 28%),
+        var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.3);
+      margin-bottom: 16px;
+    }
+    h1 { margin: 0 0 6px; color: var(--green); font-size: 1.75rem; }
+    .sub { margin: 0; color: var(--muted); line-height: 1.45; }
+    .grid { display: grid; grid-template-columns: 380px 1fr; gap: 16px; }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.25);
+    }
+    .card h2 { margin: 0 0 12px; color: var(--pink); font-size: 1.05rem; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    label { display: block; margin: 10px 0 6px; color: var(--muted); font-size: .92rem; }
+    input, select, textarea, button {
+      width: 100%;
+      padding: 12px 13px;
+      border-radius: 12px;
+      border: 1px solid #2f2f2f;
+      background: var(--panel2);
+      color: var(--text);
+      font-size: 15px;
+    }
+    textarea {
+      min-height: 112px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    button { border: none; cursor: pointer; font-weight: 700; }
+    button:active { transform: translateY(1px); }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; }
+    .toolbar button { flex: 1 1 160px; }
+    .primary { background: var(--green); color: #00160d; }
+    .secondary { background: #24332d; color: var(--text); }
+    .pink { background: var(--pink); color: #fff; }
+    .danger { background: var(--red); color: #fff; }
+    .status {
+      margin-top: 12px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #24453b;
+      background: #102018;
+      color: var(--green);
+    }
+    .previewShell {
+      margin-top: 12px;
+      background: #070707;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      min-height: 440px;
+      padding: 12px;
+      overflow: auto;
+    }
+    .hint {
+      margin-top: 10px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px dashed #355449;
+      background: rgba(0,255,157,.04);
+      color: var(--muted);
+      line-height: 1.4;
+      font-size: .92rem;
+    }
+    .list { display: grid; gap: 8px; max-height: 260px; overflow: auto; margin-top: 10px; }
+    .saved {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+      align-items: center;
+      background: #141414;
+      border: 1px solid #2b2b2b;
+      border-radius: 12px;
+      padding: 10px;
+    }
+    .saved strong { display: block; font-size: .95rem; }
+    .saved small { color: var(--muted); }
+    .tiny { margin-top: 6px; font-size: .82rem; color: var(--muted); }
+    .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .pill {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: #1d2824;
+      color: var(--green);
+      border: 1px solid #28463d;
+      font-size: .82rem;
+    }
+    svg { max-width: 100%; height: auto; }
+    @media (max-width: 960px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>🔧 Gasket Maker Pro</h1>
+      <p class="sub">A single-file gasket app with live preview, inner cutout, bolt pattern editor, manual hole overrides, save/load presets, JSON import/export, and SVG download. Built for sharing now and wrapping into an APK later.</p>
+      <div class="pills">
+        <span class="pill">Offline</span>
+        <span class="pill">Single HTML file</span>
+        <span class="pill">Sharable</span>
+        <span class="pill">SVG export</span>
+        <span class="pill">JSON import/export</span>
+      </div>
+    </section><div class="grid">
+  <section class="card">
+    <h2>Designer</h2>
+
+    <label for="make">Make</label>
+    <select id="make"></select>
+
+    <label for="model">Model / Engine</label>
+    <select id="model"></select>
+
+    <div class="row">
+      <div>
+        <label for="year">Year</label>
+        <input id="year" type="text" value="2023" />
+      </div>
+      <div>
+        <label for="type">Gasket Type</label>
+        <input id="type" type="text" value="head_gasket" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label for="width">Outer Width (mm)</label>
+        <input id="width" type="number" step="0.1" value="250" />
+      </div>
+      <div>
+        <label for="height">Outer Height (mm)</label>
+        <input id="height" type="number" step="0.1" value="170" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label for="cornerRadius">Corner Radius (mm)</label>
+        <input id="cornerRadius" type="number" step="0.1" value="8" />
+      </div>
+      <div>
+        <label for="strokeWidth">Cut Line Width</label>
+        <input id="strokeWidth" type="number" step="0.1" value="2.2" />
+      </div>
+    </div>
+
+    <h2 style="margin-top:16px;">Inner Cutout</h2>
+    <div class="row">
+      <div>
+        <label for="innerWidth">Inner Width (mm)</label>
+        <input id="innerWidth" type="number" step="0.1" value="180" />
+      </div>
+      <div>
+        <label for="innerHeight">Inner Height (mm)</label>
+        <input id="innerHeight" type="number" step="0.1" value="100" />
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label for="innerOffsetX">Inner Offset X (mm)</label>
+        <input id="innerOffsetX" type="number" step="0.1" value="0" />
+      </div>
+      <div>
+        <label for="innerOffsetY">Inner Offset Y (mm)</label>
+        <input id="innerOffsetY" type="number" step="0.1" value="0" />
+      </div>
+    </div>
+
+    <h2 style="margin-top:16px;">Bolt Pattern</h2>
+    <div class="row3">
+      <div>
+        <label for="holesX">Holes Across</label>
+        <input id="holesX" type="number" min="1" step="1" value="2" />
+      </div>
+      <div>
+        <label for="holesY">Holes Down</label>
+        <input id="holesY" type="number" min="1" step="1" value="2" />
+      </div>
+      <div>
+        <label for="holeDiameter">Hole Diameter (mm)</label>
+        <input id="holeDiameter" type="number" step="0.1" value="10" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label for="marginX">Side Margin (mm)</label>
+        <input id="marginX" type="number" step="0.1" value="45" />
+      </div>
+      <div>
+        <label for="marginY">Top/Bottom Margin (mm)</label>
+        <input id="marginY" type="number" step="0.1" value="35" />
+      </div>
+    </div>
+
+    <label for="manualHoles">Manual Hole Overrides</label>
+    <textarea id="manualHoles" placeholder="One hole per line:
+
+40,30,10 210,30,10 40,140,10 210,140,10"></textarea> <div class="tiny">Format: x,y,diameter in mm. If you add lines here, they override the auto grid.</div> </section>
+
+<section>
+    <div class="card">
+      <h2>Preview & Export</h2>
+      <div class="toolbar">
+        <button class="primary" id="previewBtn">Preview</button>
+        <button class="secondary" id="downloadSvgBtn">Download SVG</button>
+        <button class="secondary" id="downloadJsonBtn">Export JSON</button>
+        <button class="pink" id="savePresetBtn">Save Preset</button>
+        <button class="danger" id="resetBtn">Reset</button>
+      </div>
+      <div class="status" id="status">Ready. Let’s cut something useful.</div>
+      <div class="previewShell" id="previewShell"></div>
+      <div class="hint">Use <strong>Export JSON</strong> to share a gasket design with somebody else. They can load it using the importer below. That makes this file travel like a tiny toolbox.</div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h2>Saved Presets & Import</h2>
+      <input type="file" id="importJsonInput" accept="application/json" />
+      <div class="list" id="savedList"></div>
+    </div>
+  </section>
+</div>
+
+  </div>  <script>
+    const PRESETS = {
+      Toyota: {
+        'Supra 2JZ': { year:'1998', type:'head_gasket', width:285, height:195, cornerRadius:8, strokeWidth:2.2, innerWidth:205, innerHeight:112, innerOffsetX:0, innerOffsetY:0, holesX:2, holesY:2, holeDiameter:10, marginX:48, marginY:36, manualHoles:'' },
+        Camry: { year:'2002', type:'head_gasket', width:245, height:165, cornerRadius:8, strokeWidth:2.2, innerWidth:175, innerHeight:92, innerOffsetX:0, innerOffsetY:0, holesX:2, holesY:2, holeDiameter:10, marginX:42, marginY:30, manualHoles:'' }
+      },
+      Ford: {
+        'F-150 5.4': { year:'1999', type:'head_gasket', width:270, height:185, cornerRadius:8, strokeWidth:2.2, innerWidth:188, innerHeight:105, innerOffsetX:0, innerOffsetY:0, holesX:2, holesY:2, holeDiameter:10, marginX:45, marginY:35, manualHoles:'' },
+        Mustang: { year:'2001', type:'head_gasket', width:270, height:185, cornerRadius:8, strokeWidth:2.2, innerWidth:192, innerHeight:104, innerOffsetX:0, innerOffsetY:0, holesX:2, holesY:2, holeDiameter:10, marginX:44, marginY:34, manualHoles:'' }
+      },
+      Dodge: {
+        'Ram 1500 5.7 Hemi': { year:'2003', type:'oil_pan', width:320, height:220, cornerRadius:12, strokeWidth:2.2, innerWidth:245, innerHeight:145, innerOffsetX:0, innerOffsetY:0, holesX:3, holesY:2, holeDiameter:9, marginX:38, marginY:32, manualHoles:'' }
+      },
+      Custom: {
+        'Custom Size': { year:'2023', type:'custom_gasket', width:250, height:170, cornerRadius:8, strokeWidth:2.2, innerWidth:180, innerHeight:100, innerOffsetX:0, innerOffsetY:0, holesX:2, holesY:2, holeDiameter:10, marginX:45, marginY:35, manualHoles:'' }
+      }
+    };
+
+    const STORAGE_KEY = 'gasket_maker_saved_presets_v1';
+    const FIELDS = ['year','type','width','height','cornerRadius','strokeWidth','innerWidth','innerHeight','innerOffsetX','innerOffsetY','holesX','holesY','holeDiameter','marginX','marginY','manualHoles'];
+    const $ = (id) => document.getElementById(id);
+
+    function setStatus(msg, kind='ok') {
+      const box = $('status');
+      box.textContent = msg;
+      if (kind === 'bad') {
+        box.style.background = '#2a1419';
+        box.style.borderColor = '#6b2631';
+        box.style.color = '#ff9bb0';
+      } else if (kind === 'warn') {
+        box.style.background = '#2a2413';
+        box.style.borderColor = '#6b571c';
+        box.style.color = '#ffd166';
+      } else {
+        box.style.background = '#102018';
+        box.style.borderColor = '#24453b';
+        box.style.color = '#00ff9d';
+      }
+    }
+
+    function num(id, fallback=0) {
+      const n = parseFloat($(id).value);
+      return Number.isFinite(n) ? n : fallback;
+    }
+
+    function intNum(id, fallback=0) {
+      const n = parseInt($(id).value, 10);
+      return Number.isFinite(n) ? n : fallback;
+    }
+
+    function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
+
+    function escapeXml(str) {
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&apos;');
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function slugify(s) {
+      return String(s).trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    }
+
+    function populateMakes() {
+      const make = $('make');
+      make.innerHTML = '';
+      Object.keys(PRESETS).sort().forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        make.appendChild(opt);
+      });
+    }
+
+    function populateModels() {
+      const makeName = $('make').value;
+      const model = $('model');
+      model.innerHTML = '';
+      Object.keys(PRESETS[makeName]).forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        model.appendChild(opt);
+      });
+    }
+
+    function applyPreset() {
+      const data = PRESETS[$('make').value][$('model').value];
+      if (!data) return;
+      for (const [key, value] of Object.entries(data)) {
+        if ($(key)) $(key).value = value;
+      }
+      preview();
+      setStatus(`Loaded preset: ${$('make').value} ${$('model').value}`);
+    }
+
+    function parseManualHoles() {
+      const raw = $('manualHoles').value.trim();
+      if (!raw) return null;
+      const holes = [];
+      const lines = raw.split(/\n+/).map(s => s.trim()).filter(Boolean);
+      for (const line of lines) {
+        const parts = line.split(',').map(v => parseFloat(v.trim()));
+        if (parts.length < 3 || parts.some(v => !Number.isFinite(v))) {
+          throw new Error(`Bad hole line: ${line}`);
+        }
+        holes.push({ x: parts[0], y: parts[1], d: parts[2] });
+      }
+      return holes;
+    }
+
+    function generateGridHoles(cfg) {
+      const holes = [];
+      const cols = Math.max(1, cfg.holesX);
+      const rows = Math.max(1, cfg.holesY);
+      const usableW = Math.max(0, cfg.width - cfg.marginX * 2);
+      const usableH = Math.max(0, cfg.height - cfg.marginY * 2);
+      const stepX = cols === 1 ? 0 : usableW / (cols - 1);
+      const stepY = rows === 1 ? 0 : usableH / (rows - 1);
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          holes.push({ x: cfg.marginX + c * stepX, y: cfg.marginY + r * stepY, d: cfg.holeDiameter });
+        }
+      }
+      return holes;
+    }
+
+    function collectConfig() {
+      const width = num('width', 250);
+      const height = num('height', 170);
+      if (width <= 0 || height <= 0) throw new Error('Width and height must be greater than 0.');
+
+      const cfg = {
+        make: $('make').value || 'Custom',
+        model: $('model').value || 'Custom Size',
+        year: $('year').value.trim() || '0000',
+        type: $('type').value.trim() || 'custom_gasket',
+        width,
+        height,
+        cornerRadius: clamp(num('cornerRadius', 8), 0, Math.min(width, height) / 4),
+        strokeWidth: Math.max(0.2, num('strokeWidth', 2.2)),
+        innerWidth: clamp(num('innerWidth', 180), 0, width - 6),
+        innerHeight: clamp(num('innerHeight', 100), 0, height - 6),
+        innerOffsetX: num('innerOffsetX', 0),
+        innerOffsetY: num('innerOffsetY', 0),
+        holesX: Math.max(1, intNum('holesX', 2)),
+        holesY: Math.max(1, intNum('holesY', 2)),
+        holeDiameter: Math.max(0.5, num('holeDiameter', 10)),
+        marginX: num('marginX', 45),
+        marginY: num('marginY', 35),
+        manualHoles: $('manualHoles').value
+      };
+
+      cfg.holes = parseManualHoles() || generateGridHoles(cfg);
+      return cfg;
+    }
+
+    function buildSvg(cfg) {
+      const outerX = cfg.strokeWidth / 2;
+      const outerY = cfg.strokeWidth / 2;
+      const outerW = cfg.width - cfg.strokeWidth;
+      const outerH = cfg.height - cfg.strokeWidth;
+      const innerX = (cfg.width - cfg.innerWidth) / 2 + cfg.innerOffsetX;
+      const innerY = (cfg.height - cfg.innerHeight) / 2 + cfg.innerOffsetY;
+      const innerRadius = Math.max(0, cfg.cornerRadius * 0.65);
+      const holesMarkup = cfg.holes.map(h => `<circle cx="${h.x}" cy="${h.y}" r="${h.d / 2}" fill="none" stroke="#00aaff" stroke-width="1.4" />`).join('\n  ');
+      return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${cfg.width}mm" height="${cfg.height}mm" viewBox="0 0 ${cfg.width} ${cfg.height}">
+  <rect width="100%" height="100%" fill="#0a0a0a" />
+  <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="${cfg.cornerRadius}" ry="${cfg.cornerRadius}" fill="none" stroke="#ff4040" stroke-width="${cfg.strokeWidth}" />
+  <rect x="${innerX}" y="${innerY}" width="${cfg.innerWidth}" height="${cfg.innerHeight}" rx="${innerRadius}" ry="${innerRadius}" fill="none" stroke="#ffd166" stroke-width="1.5" />
+  ${holesMarkup}
+  <text x="10" y="18" font-family="monospace" font-size="8" fill="#91ffe0">${escapeXml(cfg.make)} ${escapeXml(cfg.model)} ${escapeXml(cfg.year)} ${escapeXml(cfg.type)}</text>
+  <text x="10" y="29" font-family="monospace" font-size="6" fill="#8fa6a0">Outer ${cfg.width}x${cfg.height} mm | Inner ${cfg.innerWidth}x${cfg.innerHeight} mm | Holes ${cfg.holes.length}</text>
+</svg>`;
+    }
+
+    function preview() {
+      try {
+        const cfg = collectConfig();
+        $('previewShell').innerHTML = buildSvg(cfg);
+        setStatus(`Preview updated. ${cfg.holes.length} hole${cfg.holes.length === 1 ? '' : 's'} in play.`);
+      } catch (err) {
+        setStatus(err.message, 'bad');
+      }
+    }
+
+    function downloadText(content, filename, mime) {
+      const blob = new Blob([content], { type: mime });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    }
+
+    function downloadSvg() {
+      try {
+        const cfg = collectConfig();
+        const name = `${slugify(cfg.make)}_${slugify(cfg.model)}_${slugify(cfg.year)}_${slugify(cfg.type)}.svg`;
+        downloadText(buildSvg(cfg), name, 'image/svg+xml');
+        setStatus(`SVG downloaded: ${name}`);
+      } catch (err) {
+        setStatus(err.message, 'bad');
+      }
+    }
+
+    function exportJson() {
+      try {
+        const cfg = collectConfig();
+        const payload = { ...cfg, exportedAt: new Date().toISOString() };
+        delete payload.holes;
+        const name = `${slugify(cfg.make)}_${slugify(cfg.model)}_${slugify(cfg.year)}.json`;
+        downloadText(JSON.stringify(payload, null, 2), name, 'application/json');
+        setStatus(`JSON exported: ${name}`);
+      } catch (err) {
+        setStatus(err.message, 'bad');
+      }
+    }
+
+    function savedItems() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+      catch { return []; }
+    }
+
+    function writeSaved(items) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    }
+
+    function savePreset() {
+      try {
+        const cfg = collectConfig();
+        const label = prompt('Name this preset:', `${cfg.make} ${cfg.model} ${cfg.year}`);
+        if (!label) {
+          setStatus('Save canceled.', 'warn');
+          return;
+        }
+        const items = savedItems();
+        items.unshift({
+          id: (globalThis.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now() + Math.random()),
+          label,
+          data: { ...cfg },
+          createdAt: new Date().toISOString()
+        });
+        items[0].data.holes = undefined;
+        writeSaved(items);
+        renderSaved();
+        setStatus(`Saved preset: ${label}`);
+      } catch (err) {
+        setStatus(err.message, 'bad');
+      }
+    }
+
+    function applyImportedData(data) {
+      if (!PRESETS[data.make]) PRESETS[data.make] = {};
+      if (!PRESETS[data.make][data.model]) PRESETS[data.make][data.model] = {};
+      PRESETS[data.make][data.model] = {
+        year: data.year || '0000',
+        type: data.type || 'custom_gasket',
+        width: data.width || 250,
+        height: data.height || 170,
+        cornerRadius: data.cornerRadius || 8,
+        strokeWidth: data.strokeWidth || 2.2,
+        innerWidth: data.innerWidth || 180,
+        innerHeight: data.innerHeight || 100,
+        innerOffsetX: data.innerOffsetX || 0,
+        innerOffsetY: data.innerOffsetY || 0,
+        holesX: data.holesX || 2,
+        holesY: data.holesY || 2,
+        holeDiameter: data.holeDiameter || 10,
+        marginX: data.marginX || 45,
+        marginY: data.marginY || 35,
+        manualHoles: data.manualHoles || ''
+      };
+      populateMakes();
+      $('make').value = data.make || 'Custom';
+      populateModels();
+      $('model').value = data.model || Object.keys(PRESETS[$('make').value])[0];
+      FIELDS.forEach(id => { if ($(id) && Object.hasOwn(data, id)) $(id).value = data[id]; });
+      preview();
+    }
+
+    function renderSaved() {
+      const list = $('savedList');
+      const items = savedItems();
+      if (!items.length) {
+        list.innerHTML = '<div class="hint">No saved presets yet. Save one and this shelf stops echoing.</div>';
+        return;
+      }
+      list.innerHTML = '';
+      items.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'saved';
+        row.innerHTML = `
+          <div>
+            <strong>${escapeHtml(item.label)}</strong>
+            <small>${escapeHtml(item.data.make)} ${escapeHtml(item.data.model)} • ${escapeHtml(item.data.year)}</small>
+          </div>
+          <button class="secondary">Load</button>
+          <button class="danger">Delete</button>
+        `;
+        row.children[1].addEventListener('click', () => { applyImportedData(item.data); setStatus(`Loaded saved preset: ${item.label}`); });
+        row.children[2].addEventListener('click', () => {
+          writeSaved(savedItems().filter(x => x.id !== item.id));
+          renderSaved();
+          setStatus('Saved preset deleted.', 'warn');
+        });
+        list.appendChild(row);
+      });
+    }
+
+    function resetForm() {
+      $('make').value = 'Custom';
+      populateModels();
+      $('model').value = 'Custom Size';
+      applyPreset();
+      setStatus('Reset to Custom Size.');
+    }
+
+    function handleImport(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          applyImportedData(data);
+          setStatus(`Imported JSON: ${file.name}`);
+        } catch {
+          setStatus('Could not read that JSON file.', 'bad');
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    }
+
+    function bindLivePreview() {
+      ['make','model', ...FIELDS].forEach(id => {
+        const node = $(id);
+        if (!node) return;
+        node.addEventListener('input', preview);
+        node.addEventListener('change', preview);
+      });
+    }
+
+    $('previewBtn').addEventListener('click', preview);
+    $('downloadSvgBtn').addEventListener('click', downloadSvg);
+    $('downloadJsonBtn').addEventListener('click', exportJson);
+    $('savePresetBtn').addEventListener('click', savePreset);
+    $('resetBtn').addEventListener('click', resetForm);
+    $('importJsonInput').addEventListener('change', handleImport);
+    $('make').addEventListener('change', () => { populateModels(); applyPreset(); });
+    $('model').addEventListener('change', applyPreset);
+
+    populateMakes();
+    $('make').value = 'Custom';
+    populateModels();
+    $('model').value = 'Custom Size';
+    bindLivePreview();
+    applyPreset();
+    renderSaved();
+  </script></body>
+</html>
