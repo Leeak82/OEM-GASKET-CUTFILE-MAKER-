@@ -1,4 +1,99 @@
 let PARTS_DB = [];
+let CURRENT_PART = null;
+
+// ----------------------
+// Pattern library
+// ----------------------
+const FASTENER_PATTERNS = {
+  vc_smallblock_8: {
+    name: "Valve Cover 8-Bolt",
+    source: "Fastener Pattern Library",
+    type: "custom",
+    width: 365,
+    height: 120,
+    holes: [
+      { x: 28, y: 22, r: 5 },
+      { x: 112, y: 18, r: 5 },
+      { x: 252, y: 18, r: 5 },
+      { x: 337, y: 22, r: 5 },
+      { x: 28, y: 98, r: 5 },
+      { x: 112, y: 102, r: 5 },
+      { x: 252, y: 102, r: 5 },
+      { x: 337, y: 98, r: 5 }
+    ]
+  },
+
+  vc_stamped_14: {
+    name: "Valve Cover 14-Bolt",
+    source: "Fastener Pattern Library",
+    type: "custom",
+    width: 430,
+    height: 135,
+    holes: [
+      { x: 28, y: 20, r: 5 },
+      { x: 88, y: 18, r: 5 },
+      { x: 148, y: 16, r: 5 },
+      { x: 215, y: 15, r: 5 },
+      { x: 282, y: 16, r: 5 },
+      { x: 342, y: 18, r: 5 },
+      { x: 402, y: 20, r: 5 },
+      { x: 28, y: 115, r: 5 },
+      { x: 88, y: 117, r: 5 },
+      { x: 148, y: 119, r: 5 },
+      { x: 215, y: 120, r: 5 },
+      { x: 282, y: 119, r: 5 },
+      { x: 342, y: 117, r: 5 },
+      { x: 402, y: 115, r: 5 }
+    ]
+  },
+
+  oilpan_perimeter_18: {
+    name: "Oil Pan 18-Bolt",
+    source: "Fastener Pattern Library",
+    type: "perimeter",
+    count: 18,
+    padding: 16,
+    radius: 5
+  },
+
+  oilpan_perimeter_20: {
+    name: "Oil Pan 20-Bolt",
+    source: "Fastener Pattern Library",
+    type: "perimeter",
+    count: 20,
+    padding: 16,
+    radius: 5
+  },
+
+  head_6bolt_basic: {
+    name: "Head Gasket 6-Bolt",
+    source: "Fastener Pattern Library",
+    type: "custom",
+    width: 285,
+    height: 195,
+    holes: [
+      { x: 28, y: 28, r: 6 },
+      { x: 142.5, y: 22, r: 6 },
+      { x: 257, y: 28, r: 6 },
+      { x: 28, y: 167, r: 6 },
+      { x: 142.5, y: 173, r: 6 },
+      { x: 257, y: 167, r: 6 }
+    ]
+  }
+};
+
+// ----------------------
+// User-friendly labels
+// ----------------------
+const GASKET_TYPE_LABELS = {
+  oil_pan: "Oil Pan",
+  valve_cover: "Valve Cover",
+  head_gasket: "Head Gasket",
+  intake_manifold: "Intake Manifold",
+  exhaust_manifold: "Exhaust Manifold",
+  timing_cover: "Timing Cover",
+  transmission_pan: "Transmission Pan"
+};
 
 // ----------------------
 // Helpers
@@ -23,6 +118,11 @@ function setValue(id, value) {
   if (el) el.value = value ?? "";
 }
 
+function setText(id, value) {
+  const el = safeEl(id);
+  if (el) el.textContent = value ?? "--";
+}
+
 function clearSelect(id, placeholder = "-- Select --") {
   const el = safeEl(id);
   if (!el) return;
@@ -34,7 +134,7 @@ function clearSelect(id, placeholder = "-- Select --") {
   el.appendChild(option);
 }
 
-function fillSelect(id, values, placeholder = "-- Select --") {
+function fillSelect(id, values, placeholder = "-- Select --", formatLabel = null) {
   const el = safeEl(id);
   if (!el) return;
 
@@ -43,7 +143,7 @@ function fillSelect(id, values, placeholder = "-- Select --") {
   values.forEach((value) => {
     const option = document.createElement("option");
     option.value = value;
-    option.textContent = value;
+    option.textContent = formatLabel ? formatLabel(value) : value;
     el.appendChild(option);
   });
 }
@@ -67,17 +167,51 @@ function findPart(filters) {
   );
 }
 
+function normalizeText(value) {
+  return String(value || "").toLowerCase().trim();
+}
+
+function clearInfoPanel() {
+  setText("infoBrand", "--");
+  setText("infoPartNumber", "--");
+  setText("infoPatternName", "--");
+  setText("infoPatternSource", "--");
+}
+
+function clearSearchResults() {
+  const container = safeEl("searchResults");
+  if (container) container.innerHTML = "";
+}
+
+function setSearchMeta(message) {
+  const el = safeEl("searchMeta");
+  if (el) el.textContent = message;
+}
+
+function clearSearchUI() {
+  setValue("partSearch", "");
+  clearSearchResults();
+  setSearchMeta("Type to search parts");
+}
+
 function clearPartFields() {
+  CURRENT_PART = null;
   setValue("partNumber", "");
   setValue("width", "");
   setValue("height", "");
   setValue("manualHoles", "");
+  clearInfoPanel();
+
   const svgOutput = safeEl("svgOutput");
   if (svgOutput) svgOutput.innerHTML = "";
 }
 
 function clearDependent(ids) {
   ids.forEach((id) => clearSelect(id));
+}
+
+function gasketTypeLabel(value) {
+  return GASKET_TYPE_LABELS[value] || value;
 }
 
 // ----------------------
@@ -130,66 +264,203 @@ function populateTypes() {
     ? getUnique("gasketType", { make, model, year, engine })
     : [];
 
-  fillSelect("type", types, "-- Select Gasket Type --");
+  fillSelect("type", types, "-- Select Gasket Type --", gasketTypeLabel);
   clearPartFields();
 }
 
 // ----------------------
-// Hole pattern handling
+// Search
+// ----------------------
+function buildSearchText(part) {
+  return [
+    part.brand,
+    part.partNumber,
+    part.make,
+    part.model,
+    part.year,
+    part.engine,
+    part.gasketType,
+    gasketTypeLabel(part.gasketType)
+  ].join(" ").toLowerCase();
+}
+
+function searchParts(query) {
+  const q = normalizeText(query);
+  if (!q) return [];
+  return PARTS_DB.filter((part) => buildSearchText(part).includes(q)).slice(0, 12);
+}
+
+function renderSearchResults(results) {
+  const container = safeEl("searchResults");
+  if (!container) return;
+
+  if (!results.length) {
+    container.innerHTML = `<div class="search-empty">No matching parts found.</div>`;
+    setSearchMeta("0 results");
+    return;
+  }
+
+  const resultLabel = results.length === 1 ? "result" : "results";
+  setSearchMeta(`${results.length} ${resultLabel}`);
+
+  container.innerHTML = results.map((part, index) => `
+    <div class="search-result-item" data-index="${index}">
+      <div class="search-result-title">
+        ${part.partNumber || "No Part Number"} • ${gasketTypeLabel(part.gasketType)}
+      </div>
+      <div class="search-result-meta">
+        ${part.brand || "Unknown Brand"}<br>
+        ${part.make} ${part.model} ${part.year} • ${part.engine}
+      </div>
+    </div>
+  `).join("");
+
+  const items = container.querySelectorAll(".search-result-item");
+  items.forEach((item) => {
+    item.addEventListener("click", () => {
+      const index = Number(item.dataset.index);
+      const part = results[index];
+      selectPartFromSearch(part);
+    });
+  });
+}
+
+function handleSearchInput() {
+  const query = getValue("partSearch");
+
+  if (!query.trim()) {
+    clearSearchResults();
+    setSearchMeta("Type to search parts");
+    return;
+  }
+
+  const results = searchParts(query);
+  renderSearchResults(results);
+}
+
+function selectPartFromSearch(part) {
+  if (!part) return;
+
+  setValue("make", part.make);
+  populateModels();
+
+  setValue("model", part.model);
+  populateYears();
+
+  setValue("year", String(part.year));
+  populateEngines();
+
+  setValue("engine", part.engine);
+  populateTypes();
+
+  setValue("type", part.gasketType);
+  loadSelectedGasket();
+
+  setValue("partSearch", `${part.partNumber} - ${part.make} ${part.model} ${part.year}`);
+  setSearchMeta("1 part selected");
+  clearSearchResults();
+}
+
+// ----------------------
+// Hole / pattern logic
 // ----------------------
 function applyHolePattern(pattern) {
   if (!Array.isArray(pattern) || pattern.length === 0) return false;
-
   const rows = pattern.map((hole) => `${hole.x},${hole.y},${hole.r || 5}`);
   setValue("manualHoles", rows.join("\n"));
   return true;
 }
 
-function generateAutoHoles(count) {
-  const width = parseFloat(getValue("width"));
-  const height = parseFloat(getValue("height"));
-
-  if (!width || !height || !count) {
-    setValue("manualHoles", "");
-    return;
-  }
-
+function generatePerimeterHoles(width, height, count, padding = 16, radius = 5) {
   const holes = [];
-  const radius = 5;
-  const padding = 16;
 
-  if (count <= 4) {
-    holes.push(`${padding},${padding},${radius}`);
-    holes.push(`${width - padding},${padding},${radius}`);
-    holes.push(`${padding},${height - padding},${radius}`);
-    holes.push(`${width - padding},${height - padding},${radius}`);
-  } else {
-    const topCount = Math.ceil(count / 4);
-    const rightCount = Math.floor(count / 4);
-    const bottomCount = Math.ceil((count - topCount - rightCount) / 2);
-    const leftCount = count - topCount - rightCount - bottomCount;
+  const topCount = Math.ceil(count / 4);
+  const rightCount = Math.floor(count / 4);
+  const bottomCount = Math.ceil((count - topCount - rightCount) / 2);
+  const leftCount = count - topCount - rightCount - bottomCount;
 
-    function edgePoints(num, x1, y1, x2, y2) {
-      const points = [];
-      if (num <= 0) return points;
+  function edgePoints(num, x1, y1, x2, y2) {
+    const points = [];
+    if (num <= 0) return points;
 
-      for (let i = 0; i < num; i++) {
-        const t = num === 1 ? 0.5 : i / (num - 1);
-        const x = x1 + (x2 - x1) * t;
-        const y = y1 + (y2 - y1) * t;
-        points.push(`${x.toFixed(1)},${y.toFixed(1)},${radius}`);
-      }
-
-      return points;
+    for (let i = 0; i < num; i++) {
+      const t = num === 1 ? 0.5 : i / (num - 1);
+      const x = x1 + (x2 - x1) * t;
+      const y = y1 + (y2 - y1) * t;
+      points.push({
+        x: Number(x.toFixed(1)),
+        y: Number(y.toFixed(1)),
+        r: radius
+      });
     }
-
-    holes.push(...edgePoints(topCount, padding, padding, width - padding, padding));
-    holes.push(...edgePoints(rightCount, width - padding, padding, width - padding, height - padding));
-    holes.push(...edgePoints(bottomCount, width - padding, height - padding, padding, height - padding));
-    holes.push(...edgePoints(leftCount, padding, height - padding, padding, padding));
+    return points;
   }
 
-  setValue("manualHoles", [...new Set(holes)].join("\n"));
+  holes.push(...edgePoints(topCount, padding, padding, width - padding, padding));
+  holes.push(...edgePoints(rightCount, width - padding, padding, width - padding, height - padding));
+  holes.push(...edgePoints(bottomCount, width - padding, height - padding, padding, height - padding));
+  holes.push(...edgePoints(leftCount, padding, height - padding, padding, padding));
+
+  const seen = new Set();
+  return holes.filter((h) => {
+    const key = `${h.x}-${h.y}-${h.r}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function resolvePatternInfo(part) {
+  if (!part?.geometry?.patternRef) {
+    return {
+      name: "Exact Hole Data",
+      source: "Direct Part Geometry"
+    };
+  }
+
+  const pattern = FASTENER_PATTERNS[part.geometry.patternRef];
+  if (!pattern) {
+    return {
+      name: part.geometry.patternRef,
+      source: "Unknown Pattern Source"
+    };
+  }
+
+  return {
+    name: pattern.name || part.geometry.patternRef,
+    source: pattern.source || "Pattern Library"
+  };
+}
+
+function resolvePatternHoles(part) {
+  if (!part?.geometry) return [];
+
+  if (Array.isArray(part.geometry.holePattern) && part.geometry.holePattern.length > 0) {
+    return part.geometry.holePattern;
+  }
+
+  const ref = part.geometry.patternRef;
+  if (!ref || !FASTENER_PATTERNS[ref]) return [];
+
+  const pattern = FASTENER_PATTERNS[ref];
+  const width = Number(part.geometry.width);
+  const height = Number(part.geometry.height);
+
+  if (pattern.type === "custom") {
+    return pattern.holes || [];
+  }
+
+  if (pattern.type === "perimeter") {
+    return generatePerimeterHoles(
+      width,
+      height,
+      pattern.count,
+      pattern.padding ?? 16,
+      pattern.radius ?? 5
+    );
+  }
+
+  return [];
 }
 
 function parseManualHoles() {
@@ -228,10 +499,25 @@ function getDefaultOutlinePath(width, height) {
 }
 
 // ----------------------
+// Info panel update
+// ----------------------
+function updateInfoPanel(part) {
+  if (!part) {
+    clearInfoPanel();
+    return;
+  }
+
+  const patternInfo = resolvePatternInfo(part);
+
+  setText("infoBrand", part.brand || "--");
+  setText("infoPartNumber", part.partNumber || "--");
+  setText("infoPatternName", patternInfo.name || "--");
+  setText("infoPatternSource", patternInfo.source || "--");
+}
+
+// ----------------------
 // Load selected gasket
 // ----------------------
-let CURRENT_PART = null;
-
 function loadSelectedGasket() {
   const make = getValue("make");
   const model = getValue("model");
@@ -244,7 +530,6 @@ function loadSelectedGasket() {
   const part = findPart({ make, model, year, engine, gasketType });
 
   if (!part) {
-    CURRENT_PART = null;
     clearPartFields();
     alert("No matching gasket found.");
     return;
@@ -252,13 +537,28 @@ function loadSelectedGasket() {
 
   CURRENT_PART = part;
 
-  setValue("partNumber", part.partNumber);
+  setValue("partNumber", part.partNumber || "");
   setValue("width", part.geometry.width);
   setValue("height", part.geometry.height);
+  updateInfoPanel(part);
 
-  const usedPattern = applyHolePattern(part.geometry.holePattern);
-  if (!usedPattern) {
-    generateAutoHoles(part.geometry.holes || 0);
+  const resolvedHoles = resolvePatternHoles(part);
+
+  if (resolvedHoles.length > 0) {
+    applyHolePattern(resolvedHoles);
+  } else if (part.geometry.holes) {
+    const fallback = generatePerimeterHoles(
+      Number(part.geometry.width),
+      Number(part.geometry.height),
+      Number(part.geometry.holes),
+      16,
+      5
+    );
+    applyHolePattern(fallback);
+    setText("infoPatternName", "Fallback Perimeter Layout");
+    setText("infoPatternSource", "Automatic Fallback");
+  } else {
+    setValue("manualHoles", "");
   }
 
   renderSVG();
@@ -350,6 +650,7 @@ function importDatabaseFromFile(file) {
       CURRENT_PART = null;
       populateMakes();
       clearPartFields();
+      clearSearchUI();
       alert(`Imported ${PARTS_DB.length} parts.`);
     } catch (error) {
       console.error(error);
@@ -413,6 +714,9 @@ function attachEvents() {
   safeEl("importBtn")?.addEventListener("click", () => {
     createHiddenImportInput().click();
   });
+
+  safeEl("partSearch")?.addEventListener("input", handleSearchInput);
+  safeEl("clearSearchBtn")?.addEventListener("click", clearSearchUI);
 }
 
 // ----------------------
@@ -421,6 +725,8 @@ function attachEvents() {
 async function initApp() {
   attachEvents();
   createHiddenImportInput();
+  clearInfoPanel();
+  clearSearchUI();
   await loadDatabaseFile();
 }
 
