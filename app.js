@@ -93,6 +93,9 @@ const GASKET_TYPE_LABELS = {
   exhaust_manifold: "Exhaust Manifold",
   timing_cover: "Timing Cover",
   transmission_pan: "Transmission Pan"
+  valve_cover_left: "Valve Cover Left",
+  valve_cover_right: "Valve Cover Right",
+  timing_cover_right: "Timing Cover Right"
 };
 
 // ----------------------
