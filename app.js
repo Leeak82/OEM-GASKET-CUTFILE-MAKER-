@@ -1,5 +1,7 @@
 let PARTS_DB = [];
 let CURRENT_PART = null;
+let CAMERA_STREAM = null;
+let LAST_SCAN_RESULT = null;
 
 // ----------------------
 // Pattern library
@@ -92,10 +94,10 @@ const GASKET_TYPE_LABELS = {
   intake_manifold: "Intake Manifold",
   exhaust_manifold: "Exhaust Manifold",
   timing_cover: "Timing Cover",
-  transmission_pan: "Transmission Pan"
+  timing_cover_right: "Timing Cover Right",
+  transmission_pan: "Transmission Pan",
   valve_cover_left: "Valve Cover Left",
-  valve_cover_right: "Valve Cover Right",
-  timing_cover_right: "Timing Cover Right"
+  valve_cover_right: "Valve Cover Right"
 };
 
 // ----------------------
@@ -215,6 +217,14 @@ function clearDependent(ids) {
 
 function gasketTypeLabel(value) {
   return GASKET_TYPE_LABELS[value] || value;
+}
+
+function setScanStatus(message) {
+  setText("scanStatus", message);
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
 }
 
 // ----------------------
@@ -583,6 +593,7 @@ function renderSVG() {
   }
 
   const outlinePath =
+    LAST_SCAN_RESULT?.outlinePath?.trim() ||
     CURRENT_PART?.geometry?.outlinePath?.trim() ||
     getDefaultOutlinePath(width, height);
 
@@ -618,6 +629,444 @@ function downloadSVG() {
   document.body.removeChild(a);
 
   URL.revokeObjectURL(url);
+}
+
+// ----------------------
+// Scan utilities
+// ----------------------
+function getSourceCanvas() {
+  return safeEl("sourceCanvas");
+}
+
+function getProcessedCanvas() {
+  return safeEl("processedCanvas");
+}
+
+function ensureCanvasSize(canvas, width, height) {
+  if (!canvas) return;
+  canvas.width = width;
+  canvas.height = height;
+}
+
+async function startCamera() {
+  const video = safeEl("cameraPreview");
+  if (!video) return;
+
+  try {
+    CAMERA_STREAM = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" },
+      audio: false
+    });
+    video.srcObject = CAMERA_STREAM;
+    setScanStatus("Camera started");
+  } catch (error) {
+    console.error(error);
+    setScanStatus("Camera access failed");
+    alert("Could not access camera. Try image upload instead.");
+  }
+}
+
+function stopCamera() {
+  if (CAMERA_STREAM) {
+    CAMERA_STREAM.getTracks().forEach(track => track.stop());
+    CAMERA_STREAM = null;
+  }
+
+  const video = safeEl("cameraPreview");
+  if (video) {
+    video.srcObject = null;
+  }
+
+  setScanStatus("Camera stopped");
+}
+
+function capturePhoto() {
+  const video = safeEl("cameraPreview");
+  const canvas = getSourceCanvas();
+  if (!video || !canvas) return;
+
+  const width = video.videoWidth || 640;
+  const height = video.videoHeight || 480;
+
+  ensureCanvasSize(canvas, width, height);
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0, width, height);
+
+  setScanStatus("Photo captured");
+}
+
+function loadUploadedImage(file) {
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = getSourceCanvas();
+      if (!canvas) return;
+
+      const maxWidth = 1000;
+      const scale = img.width > maxWidth ? maxWidth / img.width : 1;
+      const width = Math.round(img.width * scale);
+      const height = Math.round(img.height * scale);
+
+      ensureCanvasSize(canvas, width, height);
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, width, height);
+      ctx.drawImage(img, 0, 0, width, height);
+
+      setScanStatus("Image loaded");
+    };
+    img.src = event.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function makeBinaryMask(imageData, threshold) {
+  const { data, width, height } = imageData;
+  const mask = new Uint8Array(width * height);
+
+  for (let i = 0; i < width * height; i++) {
+    const r = data[i * 4];
+    const g = data[i * 4 + 1];
+    const b = data[i * 4 + 2];
+    const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+
+    // assume darker gasket on lighter background
+    mask[i] = gray < threshold ? 1 : 0;
+  }
+
+  return { mask, width, height };
+}
+
+function countNeighbors(mask, width, height, x, y) {
+  let count = 0;
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      if (dx === 0 && dy === 0) continue;
+      const nx = x + dx;
+      const ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+      if (mask[ny * width + nx]) count++;
+    }
+  }
+  return count;
+}
+
+function denoiseMask(maskObj) {
+  const { mask, width, height } = maskObj;
+  const out = new Uint8Array(mask.length);
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = y * width + x;
+      const neighbors = countNeighbors(mask, width, height, x, y);
+      if (mask[idx]) {
+        out[idx] = neighbors >= 2 ? 1 : 0;
+      } else {
+        out[idx] = neighbors >= 6 ? 1 : 0;
+      }
+    }
+  }
+
+  return { mask: out, width, height };
+}
+
+function findBoundingBox(maskObj) {
+  const { mask, width, height } = maskObj;
+  let minX = width;
+  let minY = height;
+  let maxX = -1;
+  let maxY = -1;
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (mask[y * width + x]) {
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+
+  if (maxX === -1 || maxY === -1) return null;
+
+  return { minX, minY, maxX, maxY };
+}
+
+function connectedComponents(mask, width, height, targetValue = 1) {
+  const visited = new Uint8Array(mask.length);
+  const components = [];
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = y * width + x;
+      if (visited[idx] || mask[idx] !== targetValue) continue;
+
+      const queue = [[x, y]];
+      visited[idx] = 1;
+
+      let pixels = [];
+      let minX = x;
+      let minY = y;
+      let maxX = x;
+      let maxY = y;
+
+      while (queue.length) {
+        const [cx, cy] = queue.pop();
+        pixels.push([cx, cy]);
+
+        if (cx < minX) minX = cx;
+        if (cy < minY) minY = cy;
+        if (cx > maxX) maxX = cx;
+        if (cy > maxY) maxY = cy;
+
+        const neighbors = [
+          [cx + 1, cy],
+          [cx - 1, cy],
+          [cx, cy + 1],
+          [cx, cy - 1]
+        ];
+
+        for (const [nx, ny] of neighbors) {
+          if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+          const nIdx = ny * width + nx;
+          if (visited[nIdx] || mask[nIdx] !== targetValue) continue;
+          visited[nIdx] = 1;
+          queue.push([nx, ny]);
+        }
+      }
+
+      components.push({
+        pixels,
+        area: pixels.length,
+        minX,
+        minY,
+        maxX,
+        maxY,
+        cx: (minX + maxX) / 2,
+        cy: (minY + maxY) / 2,
+        width: maxX - minX + 1,
+        height: maxY - minY + 1
+      });
+    }
+  }
+
+  return components;
+}
+
+function detectHoles(maskObj, bbox, minHoleArea) {
+  const { mask, width, height } = maskObj;
+  const inverse = new Uint8Array(mask.length);
+
+  for (let i = 0; i < mask.length; i++) {
+    inverse[i] = mask[i] ? 0 : 1;
+  }
+
+  const components = connectedComponents(inverse, width, height, 1);
+
+  return components
+    .filter((comp) => {
+      const inside =
+        comp.minX > bbox.minX &&
+        comp.maxX < bbox.maxX &&
+        comp.minY > bbox.minY &&
+        comp.maxY < bbox.maxY;
+
+      const notTouchingEdge =
+        comp.minX > 2 &&
+        comp.minY > 2 &&
+        comp.maxX < width - 3 &&
+        comp.maxY < height - 3;
+
+      const areaOk = comp.area >= minHoleArea;
+      const ratio = comp.width / Math.max(1, comp.height);
+      const shapeOk = ratio > 0.35 && ratio < 2.8;
+
+      return inside && notTouchingEdge && areaOk && shapeOk;
+    })
+    .map((comp) => {
+      const radius = Math.max(3, Math.round((comp.width + comp.height) / 4));
+      return {
+        x: comp.cx - bbox.minX,
+        y: comp.cy - bbox.minY,
+        r: radius
+      };
+    });
+}
+
+function buildOutlinePathFromMask(maskObj, bbox) {
+  const { mask, width } = maskObj;
+  const localWidth = bbox.maxX - bbox.minX + 1;
+  const localHeight = bbox.maxY - bbox.minY + 1;
+
+  let topPoints = [];
+  let bottomPoints = [];
+
+  const step = Math.max(1, Math.floor(localWidth / 60));
+
+  for (let lx = 0; lx < localWidth; lx += step) {
+    const x = bbox.minX + lx;
+    let topY = null;
+    let bottomY = null;
+
+    for (let y = bbox.minY; y <= bbox.maxY; y++) {
+      if (mask[y * width + x]) {
+        topY = y;
+        break;
+      }
+    }
+
+    for (let y = bbox.maxY; y >= bbox.minY; y--) {
+      if (mask[y * width + x]) {
+        bottomY = y;
+        break;
+      }
+    }
+
+    if (topY !== null) {
+      topPoints.push([x - bbox.minX, topY - bbox.minY]);
+    }
+    if (bottomY !== null) {
+      bottomPoints.push([x - bbox.minX, bottomY - bbox.minY]);
+    }
+  }
+
+  if (topPoints.length < 3 || bottomPoints.length < 3) {
+    return getDefaultOutlinePath(localWidth, localHeight);
+  }
+
+  const pathParts = [];
+  const first = topPoints[0];
+  pathParts.push(`M ${first[0]} ${first[1]}`);
+
+  for (let i = 1; i < topPoints.length; i++) {
+    pathParts.push(`L ${topPoints[i][0]} ${topPoints[i][1]}`);
+  }
+
+  for (let i = bottomPoints.length - 1; i >= 0; i--) {
+    pathParts.push(`L ${bottomPoints[i][0]} ${bottomPoints[i][1]}`);
+  }
+
+  pathParts.push("Z");
+  return pathParts.join(" ");
+}
+
+function drawProcessedMask(maskObj, bbox, holes) {
+  const canvas = getProcessedCanvas();
+  if (!canvas) return;
+
+  const { mask, width, height } = maskObj;
+  ensureCanvasSize(canvas, width, height);
+  const ctx = canvas.getContext("2d");
+  const image = ctx.createImageData(width, height);
+
+  for (let i = 0; i < mask.length; i++) {
+    const value = mask[i] ? 20 : 240;
+    image.data[i * 4] = value;
+    image.data[i * 4 + 1] = value;
+    image.data[i * 4 + 2] = value;
+    image.data[i * 4 + 3] = 255;
+  }
+
+  ctx.putImageData(image, 0, 0);
+
+  if (bbox) {
+    ctx.strokeStyle = "#22c55e";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(
+      bbox.minX,
+      bbox.minY,
+      bbox.maxX - bbox.minX,
+      bbox.maxY - bbox.minY
+    );
+
+    ctx.fillStyle = "#ef4444";
+    holes.forEach((hole) => {
+      ctx.beginPath();
+      ctx.arc(bbox.minX + hole.x, bbox.minY + hole.y, hole.r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+}
+
+function processScan() {
+  const sourceCanvas = getSourceCanvas();
+  if (!sourceCanvas || !sourceCanvas.width || !sourceCanvas.height) {
+    setScanStatus("Load or capture an image first");
+    return;
+  }
+
+  const ctx = sourceCanvas.getContext("2d");
+  const imageData = ctx.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
+
+  const threshold = Number(getValue("scanThreshold")) || 160;
+  const pxPerUnit = Math.max(1, Number(getValue("scanScale")) || 4);
+  const minHoleArea = Math.max(10, Number(getValue("scanMinHoleSize")) || 80);
+
+  let maskObj = makeBinaryMask(imageData, threshold);
+  maskObj = denoiseMask(maskObj);
+
+  const bbox = findBoundingBox(maskObj);
+  if (!bbox) {
+    setScanStatus("No gasket shape found");
+    drawProcessedMask(maskObj, null, []);
+    return;
+  }
+
+  const holes = detectHoles(maskObj, bbox, minHoleArea);
+  const outlinePath = buildOutlinePathFromMask(maskObj, bbox);
+
+  const widthUnits = Number(((bbox.maxX - bbox.minX + 1) / pxPerUnit).toFixed(1));
+  const heightUnits = Number(((bbox.maxY - bbox.minY + 1) / pxPerUnit).toFixed(1));
+
+  const scaledHoles = holes.map((hole) => ({
+    x: Number((hole.x / pxPerUnit).toFixed(1)),
+    y: Number((hole.y / pxPerUnit).toFixed(1)),
+    r: Number((hole.r / pxPerUnit).toFixed(1))
+  }));
+
+  const scaledOutlinePath = scalePathString(
+    outlinePath,
+    1 / pxPerUnit
+  );
+
+  LAST_SCAN_RESULT = {
+    width: widthUnits,
+    height: heightUnits,
+    holePattern: scaledHoles,
+    outlinePath: scaledOutlinePath
+  };
+
+  drawProcessedMask(maskObj, bbox, holes);
+  setScanStatus(`Scan complete: ${widthUnits} x ${heightUnits}, ${scaledHoles.length} holes detected`);
+}
+
+function scalePathString(path, scale) {
+  return path.replace(/-?\d+(\.\d+)?/g, (match) => {
+    return Number((parseFloat(match) * scale).toFixed(1)).toString();
+  });
+}
+
+function applyScanResult() {
+  if (!LAST_SCAN_RESULT) {
+    setScanStatus("No scan result to apply");
+    return;
+  }
+
+  setValue("width", LAST_SCAN_RESULT.width);
+  setValue("height", LAST_SCAN_RESULT.height);
+  applyHolePattern(LAST_SCAN_RESULT.holePattern || []);
+
+  CURRENT_PART = null;
+  setText("infoBrand", "Scan Capture");
+  setText("infoPartNumber", "SCAN-ONLY");
+  setText("infoPatternName", "Image Detected");
+  setText("infoPatternSource", "Camera / Upload");
+
+  renderSVG();
+  setScanStatus("Scan applied to SVG");
 }
 
 // ----------------------
@@ -720,6 +1169,18 @@ function attachEvents() {
 
   safeEl("partSearch")?.addEventListener("input", handleSearchInput);
   safeEl("clearSearchBtn")?.addEventListener("click", clearSearchUI);
+
+  safeEl("startCameraBtn")?.addEventListener("click", startCamera);
+  safeEl("stopCameraBtn")?.addEventListener("click", stopCamera);
+  safeEl("captureBtn")?.addEventListener("click", capturePhoto);
+  safeEl("processScanBtn")?.addEventListener("click", processScan);
+  safeEl("applyScanBtn")?.addEventListener("click", applyScanResult);
+
+  safeEl("imageUpload")?.addEventListener("change", (event) => {
+    const file = event.target.files?.[0];
+    loadUploadedImage(file);
+    event.target.value = "";
+  });
 }
 
 // ----------------------
@@ -730,6 +1191,7 @@ async function initApp() {
   createHiddenImportInput();
   clearInfoPanel();
   clearSearchUI();
+  setScanStatus("Ready to scan");
   await loadDatabaseFile();
 }
 
