@@ -10,7 +10,7 @@ body {
 }
 
 .app-shell {
-  max-width: 1200px;
+  max-width: 1300px;
   margin: 0 auto;
   padding: 20px;
 }
@@ -43,10 +43,16 @@ body {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
-.card h2 {
+.card h2,
+.card h3 {
   margin-top: 0;
   margin-bottom: 16px;
   font-size: 1.2rem;
+}
+
+.card h3 {
+  font-size: 1rem;
+  color: #cbd5e1;
 }
 
 .field {
@@ -64,7 +70,8 @@ body {
 .field input,
 .field select,
 .field textarea,
-button {
+button,
+.upload-btn {
   border-radius: 10px;
   border: 1px solid #4b5563;
   padding: 10px 12px;
@@ -83,22 +90,26 @@ button {
   min-height: 160px;
 }
 
-.button-row {
+.button-row,
+.scan-controls {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 14px;
 }
 
-button {
+button,
+.upload-btn {
   background: #2563eb;
   color: #fff;
   cursor: pointer;
   border: none;
   transition: 0.2s ease;
+  text-align: center;
 }
 
-button:hover {
+button:hover,
+.upload-btn:hover {
   background: #1d4ed8;
 }
 
@@ -153,7 +164,8 @@ button:hover {
   word-break: break-word;
 }
 
-.search-card {
+.search-card,
+.scan-card {
   grid-column: 1 / -1;
 }
 
@@ -168,7 +180,8 @@ button:hover {
   min-width: 220px;
 }
 
-.search-meta {
+.search-meta,
+.scan-status {
   margin-top: 6px;
   color: #94a3b8;
   font-size: 0.95rem;
@@ -208,4 +221,55 @@ button:hover {
 .search-empty {
   color: #94a3b8;
   font-size: 0.95rem;
+}
+
+.scan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.scan-panel {
+  background: #0f172a;
+  border: 1px solid #374151;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+#cameraPreview,
+#sourceCanvas,
+#processedCanvas {
+  width: 100%;
+  max-width: 100%;
+  background: #000;
+  border-radius: 10px;
+  border: 1px solid #374151;
+  display: block;
+}
+
+#cameraPreview {
+  min-height: 220px;
+  object-fit: cover;
+}
+
+#sourceCanvas,
+#processedCanvas {
+  min-height: 220px;
+}
+
+@media (max-width: 600px) {
+  .app-shell {
+    padding: 14px;
+  }
+
+  .search-input-row,
+  .scan-controls,
+  .button-row {
+    flex-direction: column;
+  }
+
+  .search-input-row input {
+    min-width: 100%;
+  }
 }
