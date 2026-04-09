@@ -10,10 +10,29 @@
   <div class="app-shell">
     <header class="app-header">
       <h1>Gasket Maker</h1>
-      <p>Vehicle-based gasket catalog with SVG generation</p>
+      <p>Vehicle-based gasket catalog with fastener-based SVG generation</p>
     </header>
 
     <main class="grid">
+      <section class="card search-card">
+        <h2>Search Parts</h2>
+
+        <div class="field">
+          <label for="partSearch">Search by part number, make, model, engine, brand, or gasket type</label>
+          <div class="search-input-row">
+            <input
+              id="partSearch"
+              type="text"
+              placeholder="Example: FL3Z-6710-B or Ram 1500 oil pan"
+            />
+            <button id="clearSearchBtn" type="button">Clear</button>
+          </div>
+        </div>
+
+        <div id="searchMeta" class="search-meta">Type to search parts</div>
+        <div id="searchResults" class="search-results"></div>
+      </section>
+
       <section class="card">
         <h2>Catalog Selector</h2>
 
@@ -41,15 +60,41 @@
           <label for="type">Gasket Type</label>
           <select id="type"></select>
         </div>
+      </section>
 
-        <div class="field">
-          <label for="partNumber">Part Number</label>
-          <input id="partNumber" type="text" readonly />
+      <section class="card">
+        <h2>Selected Part Info</h2>
+
+        <div class="info-grid">
+          <div class="info-box">
+            <span class="info-label">Brand</span>
+            <span id="infoBrand" class="info-value">--</span>
+          </div>
+
+          <div class="info-box">
+            <span class="info-label">Part Number</span>
+            <span id="infoPartNumber" class="info-value">--</span>
+          </div>
+
+          <div class="info-box">
+            <span class="info-label">Pattern Name</span>
+            <span id="infoPatternName" class="info-value">--</span>
+          </div>
+
+          <div class="info-box">
+            <span class="info-label">Pattern Source</span>
+            <span id="infoPatternSource" class="info-value">--</span>
+          </div>
         </div>
       </section>
 
       <section class="card">
         <h2>Geometry</h2>
+
+        <div class="field">
+          <label for="partNumber">Part Number</label>
+          <input id="partNumber" type="text" readonly />
+        </div>
 
         <div class="field">
           <label for="width">Width</label>
