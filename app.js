@@ -9,9 +9,7 @@ function $(id) {
 
 function safeEl(id) {
   const el = $(id);
-  if (!el) {
-    console.warn(`Missing element: ${id}`);
-  }
+  if (!el) console.warn(`Missing element: ${id}`);
   return el;
 }
 
@@ -194,41 +192,6 @@ function generateAutoHoles(count) {
   setValue("manualHoles", [...new Set(holes)].join("\n"));
 }
 
-// ----------------------
-// Load selected gasket
-// ----------------------
-function loadSelectedGasket() {
-  const make = getValue("make");
-  const model = getValue("model");
-  const year = Number(getValue("year"));
-  const engine = getValue("engine");
-  const gasketType = getValue("type");
-
-  if (!make || !model || !year || !engine || !gasketType) return;
-
-  const part = findPart({ make, model, year, engine, gasketType });
-
-  if (!part) {
-    clearPartFields();
-    alert("No matching gasket found.");
-    return;
-  }
-
-  setValue("partNumber", part.partNumber);
-  setValue("width", part.geometry.width);
-  setValue("height", part.geometry.height);
-
-  const usedPattern = applyHolePattern(part.geometry.holePattern);
-  if (!usedPattern) {
-    generateAutoHoles(part.geometry.holes || 0);
-  }
-
-  renderSVG();
-}
-
-// ----------------------
-// SVG render
-// ----------------------
 function parseManualHoles() {
   const raw = getValue("manualHoles").trim();
   if (!raw) return [];
@@ -245,6 +208,65 @@ function parseManualHoles() {
     .filter(Boolean);
 }
 
+// ----------------------
+// Outline handling
+// ----------------------
+function getDefaultOutlinePath(width, height) {
+  const r = 20;
+  return [
+    `M ${r} 2`,
+    `L ${width - r} 2`,
+    `Q ${width - 2} 2 ${width - 2} ${r}`,
+    `L ${width - 2} ${height - r}`,
+    `Q ${width - 2} ${height - 2} ${width - r} ${height - 2}`,
+    `L ${r} ${height - 2}`,
+    `Q 2 ${height - 2} 2 ${height - r}`,
+    `L 2 ${r}`,
+    `Q 2 2 ${r} 2`,
+    `Z`
+  ].join(" ");
+}
+
+// ----------------------
+// Load selected gasket
+// ----------------------
+let CURRENT_PART = null;
+
+function loadSelectedGasket() {
+  const make = getValue("make");
+  const model = getValue("model");
+  const year = Number(getValue("year"));
+  const engine = getValue("engine");
+  const gasketType = getValue("type");
+
+  if (!make || !model || !year || !engine || !gasketType) return;
+
+  const part = findPart({ make, model, year, engine, gasketType });
+
+  if (!part) {
+    CURRENT_PART = null;
+    clearPartFields();
+    alert("No matching gasket found.");
+    return;
+  }
+
+  CURRENT_PART = part;
+
+  setValue("partNumber", part.partNumber);
+  setValue("width", part.geometry.width);
+  setValue("height", part.geometry.height);
+
+  const usedPattern = applyHolePattern(part.geometry.holePattern);
+  if (!usedPattern) {
+    generateAutoHoles(part.geometry.holes || 0);
+  }
+
+  renderSVG();
+}
+
+// ----------------------
+// SVG render
+// ----------------------
 function renderSVG() {
   const width = parseFloat(getValue("width"));
   const height = parseFloat(getValue("height"));
@@ -257,25 +279,17 @@ function renderSVG() {
     return;
   }
 
-  const outerRadius = 20;
+  const outlinePath =
+    CURRENT_PART?.geometry?.outlinePath?.trim() ||
+    getDefaultOutlinePath(width, height);
 
   const holesMarkup = holes.map((hole) => {
-    return `<circle cx="${hole.x}" cy="${hole.y}" r="${hole.r}" fill="white" stroke="black" stroke-width="1" />`;
+    return `<circle cx="${hole.x}" cy="${hole.y}" r="${hole.r}" fill="white" stroke="black" stroke-width="1.5" />`;
   }).join("");
 
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-      <rect
-        x="2"
-        y="2"
-        width="${width - 4}"
-        height="${height - 4}"
-        rx="${outerRadius}"
-        ry="${outerRadius}"
-        fill="none"
-        stroke="black"
-        stroke-width="3"
-      />
+      <path d="${outlinePath}" fill="none" stroke="black" stroke-width="3" />
       ${holesMarkup}
     </svg>
   `;
@@ -333,6 +347,7 @@ function importDatabaseFromFile(file) {
       }
 
       PARTS_DB = parsed;
+      CURRENT_PART = null;
       populateMakes();
       clearPartFields();
       alert(`Imported ${PARTS_DB.length} parts.`);
