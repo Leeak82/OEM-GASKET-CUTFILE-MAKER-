@@ -8,8 +8,6 @@
     "brand": "Mopar",
     "partNumber": "53020675AE",
     "fitmentStatus": "verified",
-    "sourceName": "MoparPartsGiant",
-    "sourceNote": "2008 Dodge Ram 1500 5.7L Gas oil pan gasket",
     "geometry": {
       "width": 320,
       "height": 220,
@@ -26,51 +24,11 @@
     "gasketType": "head_gasket",
     "brand": "Mopar",
     "partNumber": "53020989AB",
-    "fitmentStatus": "verified_replacement",
-    "sourceName": "MoparPartsGiant",
-    "sourceNote": "2008 Dodge Ram 1500 5.7L cylinder head gasket; public page shows 53020989 replaced by 53020989AB",
+    "fitmentStatus": "verified",
     "geometry": {
       "width": 285,
       "height": 195,
       "patternRef": "head_6bolt_basic",
-      "outlinePath": "M 20 8 L 265 8 Q 277 8 277 20 L 277 175 Q 277 187 265 187 L 20 187 Q 8 187 8 175 L 8 20 Q 8 8 20 8 Z",
-      "holePattern": []
-    }
-  },
-  {
-    "make": "Dodge",
-    "model": "Ram 1500",
-    "year": 2008,
-    "engine": "5.7L V8",
-    "gasketType": "valve_cover_right",
-    "brand": "Mopar",
-    "partNumber": "53021958AA",
-    "fitmentStatus": "verified",
-    "sourceName": "MoparPartsGiant",
-    "sourceNote": "2008 Dodge Ram 1500 5.7L right cylinder head cover gasket",
-    "geometry": {
-      "width": 430,
-      "height": 135,
-      "patternRef": "vc_stamped_14",
-      "outlinePath": "",
-      "holePattern": []
-    }
-  },
-  {
-    "make": "Dodge",
-    "model": "Ram 1500",
-    "year": 2008,
-    "engine": "5.7L V8",
-    "gasketType": "valve_cover_left",
-    "brand": "Mopar",
-    "partNumber": "53021959AA",
-    "fitmentStatus": "verified",
-    "sourceName": "MoparPartsGiant",
-    "sourceNote": "2008 Dodge Ram 1500 5.7L left cylinder head cover gasket",
-    "geometry": {
-      "width": 430,
-      "height": 135,
-      "patternRef": "vc_stamped_14",
       "outlinePath": "",
       "holePattern": []
     }
@@ -85,8 +43,6 @@
     "brand": "OEM Ford",
     "partNumber": "FL3Z-6710-B",
     "fitmentStatus": "verified",
-    "sourceName": "Ford OEM Parts Outlet",
-    "sourceNote": "Oil pan gasket",
     "geometry": {
       "width": 318,
       "height": 216,
@@ -100,12 +56,10 @@
     "model": "F-150",
     "year": 2011,
     "engine": "5.0L V8",
-    "gasketType": "valve_cover_left",
+    "gasketType": "valve_cover",
     "brand": "OEM Ford",
     "partNumber": "BR3Z-6584-A",
     "fitmentStatus": "verified",
-    "sourceName": "Ford OEM Parts Outlet",
-    "sourceNote": "Left valve cover gasket, F-150 5.0L",
     "geometry": {
       "width": 365,
       "height": 120,
@@ -114,55 +68,50 @@
       "holePattern": []
     }
   },
+
   {
-    "make": "Ford",
-    "model": "F-150",
-    "year": 2011,
-    "engine": "5.0L V8",
-    "gasketType": "valve_cover_right",
-    "brand": "OEM Ford",
-    "partNumber": "BR3Z-6584-D",
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "year": 2007,
+    "engine": "5.3L V8",
+    "gasketType": "oil_pan",
+    "brand": "GM Genuine Parts",
+    "partNumber": "12612350",
     "fitmentStatus": "verified",
-    "sourceName": "Ford OEM Parts Outlet",
-    "sourceNote": "Right valve cover gasket, F-150 5.0L",
     "geometry": {
-      "width": 365,
-      "height": 120,
-      "patternRef": "vc_smallblock_8",
+      "width": 315,
+      "height": 218,
+      "patternRef": "oilpan_perimeter_20",
       "outlinePath": "",
       "holePattern": []
     }
   },
   {
-    "make": "Ford",
-    "model": "F-150",
-    "year": 2011,
-    "engine": "5.0L V8",
-    "gasketType": "timing_cover_right",
-    "brand": "OEM Ford",
-    "partNumber": "BR3Z-6020-D",
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "year": 2007,
+    "engine": "5.3L V8",
+    "gasketType": "valve_cover",
+    "brand": "Victor Reinz",
+    "partNumber": "15-10663-01",
     "fitmentStatus": "verified",
-    "sourceName": "Ford OEM Parts Outlet",
-    "sourceNote": "Front cover gasket, described for F-150 5.0L outer/right",
     "geometry": {
-      "width": 250,
-      "height": 180,
-      "patternRef": "head_6bolt_basic",
+      "width": 430,
+      "height": 135,
+      "patternRef": "vc_stamped_14",
       "outlinePath": "",
       "holePattern": []
     }
   },
   {
-    "make": "Ford",
-    "model": "F-150",
-    "year": 2011,
-    "engine": "5.0L V8",
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "year": 2007,
+    "engine": "5.3L V8",
     "gasketType": "exhaust_manifold",
-    "brand": "OEM Ford",
-    "partNumber": "BR3Z-9439-A",
+    "brand": "GM Genuine Parts",
+    "partNumber": "12550033",
     "fitmentStatus": "verified",
-    "sourceName": "Ford OEM Parts Outlet",
-    "sourceNote": "Manifold gasket, positions left/right, contains qty 4, F-150 5.0L",
     "geometry": {
       "width": 260,
       "height": 90,
@@ -173,16 +122,49 @@
   },
 
   {
-    "make": "Various",
-    "model": "GM / Hummer / Isuzu / Saab",
+    "make": "GMC",
+    "model": "Sierra 1500",
     "year": 2007,
-    "engine": "4.8L / 5.3L / 5.7L / 6.0L / 6.2L V8",
+    "engine": "5.3L V8",
+    "gasketType": "oil_pan",
+    "brand": "GM Genuine Parts",
+    "partNumber": "12612350",
+    "fitmentStatus": "verified",
+    "geometry": {
+      "width": 315,
+      "height": 218,
+      "patternRef": "oilpan_perimeter_20",
+      "outlinePath": "",
+      "holePattern": []
+    }
+  },
+  {
+    "make": "GMC",
+    "model": "Sierra 1500",
+    "year": 2007,
+    "engine": "5.3L V8",
+    "gasketType": "valve_cover",
+    "brand": "Victor Reinz",
+    "partNumber": "15-10663-01",
+    "fitmentStatus": "verified",
+    "geometry": {
+      "width": 430,
+      "height": 135,
+      "patternRef": "vc_stamped_14",
+      "outlinePath": "",
+      "holePattern": []
+    }
+  },
+
+  {
+    "make": "Various",
+    "model": "GM V8 Platform",
+    "year": 2005,
+    "engine": "4.8L / 5.3L / 6.0L",
     "gasketType": "valve_cover",
     "brand": "Victor Reinz",
     "partNumber": "15-10416-01",
-    "fitmentStatus": "broad_application_verified",
-    "sourceName": "Victor Reinz",
-    "sourceNote": "Broad application listing, 1999-2016 various V8 valve cover gasket set",
+    "fitmentStatus": "broad",
     "geometry": {
       "width": 430,
       "height": 135,
@@ -191,55 +173,16 @@
       "holePattern": []
     }
   },
+
   {
-    "make": "Various",
-    "model": "Chrysler / Dodge / Jeep / RAM / Volkswagen",
-    "year": 2012,
-    "engine": "3.2L / 3.6L V6",
+    "make": "Honda",
+    "model": "Civic",
+    "year": 2010,
+    "engine": "1.8L",
     "gasketType": "valve_cover",
-    "brand": "Victor Reinz",
-    "partNumber": "15-10489-01",
-    "fitmentStatus": "broad_application_verified",
-    "sourceName": "Victor Reinz",
-    "sourceNote": "Broad application listing, 2006-2017 various V6 valve cover gasket set",
-    "geometry": {
-      "width": 430,
-      "height": 135,
-      "patternRef": "vc_stamped_14",
-      "outlinePath": "",
-      "holePattern": []
-    }
-  },
-  {
-    "make": "Various",
-    "model": "Ford / Mazda / Mercury",
-    "year": 2012,
-    "engine": "2.0L / 2.3L / 2.5L I4",
-    "gasketType": "valve_cover",
-    "brand": "Victor Reinz",
-    "partNumber": "15-10723-01",
-    "fitmentStatus": "broad_application_verified",
-    "sourceName": "Victor Reinz",
-    "sourceNote": "Broad application listing, 2003-2017 various I4 valve cover gasket set",
-    "geometry": {
-      "width": 365,
-      "height": 120,
-      "patternRef": "vc_smallblock_8",
-      "outlinePath": "",
-      "holePattern": []
-    }
-  },
-  {
-    "make": "Various",
-    "model": "Jeep",
-    "year": 2004,
-    "engine": "4.0L I6",
-    "gasketType": "valve_cover",
-    "brand": "Victor Reinz",
-    "partNumber": "15-10668-01",
-    "fitmentStatus": "broad_application_verified",
-    "sourceName": "Victor Reinz",
-    "sourceNote": "Broad application listing, 1996-2006 Jeep 4.0L valve cover gasket set",
+    "brand": "Aftermarket",
+    "partNumber": "VS50773R",
+    "fitmentStatus": "verified",
     "geometry": {
       "width": 365,
       "height": 120,
