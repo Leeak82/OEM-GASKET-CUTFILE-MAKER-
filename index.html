@@ -10,7 +10,7 @@
   <div class="app-shell">
     <header class="app-header">
       <h1>Gasket Maker</h1>
-      <p>Vehicle-based gasket catalog with fastener-based SVG generation</p>
+      <p>Vehicle-based gasket catalog with fastener-based SVG generation and scan-to-gasket tools</p>
     </header>
 
     <main class="grid">
@@ -31,6 +31,55 @@
 
         <div id="searchMeta" class="search-meta">Type to search parts</div>
         <div id="searchResults" class="search-results"></div>
+      </section>
+
+      <section class="card scan-card">
+        <h2>Scan Gasket</h2>
+
+        <div class="scan-controls">
+          <button id="startCameraBtn" type="button">Start Camera</button>
+          <button id="captureBtn" type="button">Capture Photo</button>
+          <button id="stopCameraBtn" type="button">Stop Camera</button>
+          <label class="upload-btn">
+            Upload Image
+            <input id="imageUpload" type="file" accept="image/*" hidden />
+          </label>
+        </div>
+
+        <div class="field">
+          <label for="scanThreshold">Scan Threshold</label>
+          <input id="scanThreshold" type="range" min="20" max="235" value="160" />
+        </div>
+
+        <div class="field">
+          <label for="scanScale">Scale (pixels per unit)</label>
+          <input id="scanScale" type="number" step="0.1" min="1" value="4" />
+        </div>
+
+        <div class="field">
+          <label for="scanMinHoleSize">Minimum Hole Area</label>
+          <input id="scanMinHoleSize" type="number" min="10" value="80" />
+        </div>
+
+        <div class="scan-controls">
+          <button id="processScanBtn" type="button">Process Scan</button>
+          <button id="applyScanBtn" type="button">Use Scan In SVG</button>
+        </div>
+
+        <div id="scanStatus" class="scan-status">Ready to scan</div>
+
+        <div class="scan-grid">
+          <div class="scan-panel">
+            <h3>Camera / Source</h3>
+            <video id="cameraPreview" autoplay playsinline muted></video>
+            <canvas id="sourceCanvas"></canvas>
+          </div>
+
+          <div class="scan-panel">
+            <h3>Processed Mask</h3>
+            <canvas id="processedCanvas"></canvas>
+          </div>
+        </div>
       </section>
 
       <section class="card">
