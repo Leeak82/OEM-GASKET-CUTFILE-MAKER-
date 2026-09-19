@@ -6,10 +6,10 @@ The app can also scan a gasket image, detect the outline and holes, and use that
 
 ## Live App
 
-**Render app:**  
+**Render app:**
 https://gasket-maker-app.onrender.com
 
-**GitHub Pages mirror:**  
+**GitHub Pages mirror:**
 https://leeak82.github.io/OEM-GASKET-CUTFILE-MAKER-/
 
 The Render version is a Progressive Web App (PWA). On Android, open it in Chrome and choose **Install app** or **Add to Home screen**.
