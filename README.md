@@ -146,6 +146,18 @@ This makes the catalog expandable without rewriting the app every time.
 
 ---
 
+## Measurement & Geometry Trust
+
+This app now separates **reference data** from **cut-ready geometry**:
+
+- catalog part numbers and generic fastener patterns are reference/preview only unless exact geometry is explicitly marked `verified_exact`
+- SVG download stays disabled until the user confirms that the current dimensions and hole locations were measured or calibrated against the real physical part
+- changing width, height, or hole coordinates automatically clears verification
+- scan dimensions require an explicit pixels-per-mm calibration; there is no guessed default scale
+- unverified previews are watermarked `PREVIEW ONLY - VERIFY MEASUREMENTS`
+
+For production use, measure the real gasket or mating surface, enter or correct the geometry, verify it, then export the SVG.
+
 ## Current Limitations
 
 This version is useful and working, but it is still growing.

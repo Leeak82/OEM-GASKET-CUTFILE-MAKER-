@@ -52,8 +52,9 @@
         </div>
 
         <div class="field">
-          <label for="scanScale">Scale (pixels per unit)</label>
-          <input id="scanScale" type="number" step="0.1" min="1" value="4" />
+          <label for="scanScale">Calibration (pixels per mm)</label>
+          <input id="scanScale" type="number" step="0.1" min="0.1" placeholder="Measure a known distance in the image" />
+          <small>Required for dimensions. Do not guess this value.</small>
         </div>
 
         <div class="field">
@@ -164,9 +165,19 @@
           ></textarea>
         </div>
 
+        <div class="verification-box">
+          <strong>Cutfile verification</strong>
+          <p>Catalog geometry is reference-only unless exact sourced geometry is available. For a real cutfile, measure the physical gasket or mating surface and verify the dimensions below.</p>
+          <label class="verify-check">
+            <input id="measurementVerified" type="checkbox" />
+            I measured/calibrated the real part and verified the dimensions and hole locations.
+          </label>
+          <div id="cutfileStatus" class="cutfile-status">Preview only — not verified for cutting.</div>
+        </div>
+
         <div class="button-row">
-          <button id="generateBtn" type="button">Generate SVG</button>
-          <button id="downloadSvgBtn" type="button">Download SVG</button>
+          <button id="generateBtn" type="button">Generate Preview</button>
+          <button id="downloadSvgBtn" type="button" disabled>Download Verified SVG</button>
         </div>
 
         <div class="button-row">
