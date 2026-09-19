@@ -1,302 +1,166 @@
-# OEM Gasket Cutfile Maker
+# Gasket Maker
 
-A browser-based gasket lookup, scan, and SVG cutfile tool for mechanics, fabricators, DIY builders, and anyone who needs a cleaner way to turn gasket info into usable patterns.
+Gasket Maker is a measurement-first gasket pattern and SVG cutfile app for mechanics, fabricators, DIY builders, and anyone who needs to turn real gasket measurements into a usable digital cutting pattern.
 
-## Live Demo
+The app can also scan a gasket image, detect the outline and holes, and use that result as a starting point. Scan results still require physical calibration and verification before export.
 
-**GitHub Pages:**  
+## Live App
+
+**Render app:**  
+https://gasket-maker-app.onrender.com
+
+**GitHub Pages mirror:**  
 https://leeak82.github.io/OEM-GASKET-CUTFILE-MAKER-/
 
----
+The Render version is a Progressive Web App (PWA). On Android, open it in Chrome and choose **Install app** or **Add to Home screen**.
 
-## Overview
+## What It Does
 
-OEM Gasket Cutfile Maker supports two main workflows:
+### Measurement-to-cutfile workflow
 
-### 1. Catalog Workflow
-Find a gasket by vehicle and application:
+The safest and most accurate workflow is:
 
-- Make
-- Model
-- Year
-- Engine
-- Gasket Type
+1. Measure the real gasket or mating surface.
+2. Enter the actual width and height.
+3. Enter or adjust hole locations and hole diameters.
+4. Preview the generated geometry.
+5. Confirm that the measurements were checked against the real part.
+6. Download the verified SVG cutfile.
 
-The app then loads:
+The exported SVG uses physical millimeter dimensions and can be used as a starting point for compatible Cricut, laser, CNC, printing, tracing, or fabrication workflows.
 
-- part number
-- dimensions
-- pattern source
-- hole layout
-- SVG preview
+### Camera and image scan
 
-### 2. Scan Workflow
-Use a phone camera or uploaded image to:
+The app can:
 
-- detect the gasket outline
-- detect hole locations
-- estimate width and height
-- generate an SVG-ready pattern
+- open the phone camera
+- capture a gasket image
+- accept an uploaded image
+- threshold the image into a binary mask
+- detect the gasket bounding area
+- detect likely internal holes
+- generate an outline path
+- convert the detected geometry into an SVG preview
 
-This makes it possible to start from either a known catalog part or a real physical gasket.
+A scan does **not** automatically become a trusted cutfile. The user must enter a real pixels-per-mm calibration and verify the resulting dimensions against the physical gasket.
 
----
+### Catalog lookup
 
-## Features
+The catalog can be searched by:
 
-### Vehicle Catalog Selection
-Select a gasket by:
-
-- Make
-- Model
-- Year
-- Engine
-- Gasket Type
-
-The app loads matching data from `gasket_database.json`.
-
-### Smart Part Search
-Search by:
-
-- part number
 - make
 - model
 - year
 - engine
-- brand
 - gasket type
+- brand
+- part number
 
-Includes:
+Catalog data is useful for identifying parts and generating previews, but generic pattern data is **not treated as exact OEM cut geometry**.
 
-- live filtering
-- clickable results
-- result count
-- clear search button
+## No Fake Precision
 
-### Selected Part Info Panel
-Displays:
+Gasket Maker deliberately separates reference data from verified geometry.
 
-- Brand
-- Part Number
-- Pattern Name
-- Pattern Source
+- Generic fastener patterns are labeled **PREVIEW ONLY**.
+- Catalog entries are not considered cut-ready merely because a part number exists.
+- SVG download is disabled until the user confirms the current measurements and hole locations were physically measured or calibrated.
+- Changing width, height, or hole coordinates automatically clears verification.
+- Scan mode has no guessed default scale.
+- A real pixels-per-mm calibration is required before scan dimensions are calculated.
+- Unverified previews display **PREVIEW ONLY - VERIFY MEASUREMENTS**.
+- Verified exports use physical millimeter dimensions.
 
-### Fastener-Based Pattern Engine
-Reusable pattern references help generate realistic hole layouts when exact coordinates are not available yet.
+This prevents a convincing-looking generic drawing from being presented as an accurate production gasket pattern.
 
-Examples include:
+## Features
 
-- Valve Cover 8-Bolt
-- Valve Cover 14-Bolt
-- Oil Pan 18-Bolt
-- Oil Pan 20-Bolt
-- Head Gasket 6-Bolt
+- Vehicle/application catalog
+- Part-number search
+- Manual measurement entry
+- Manual hole-coordinate editing
+- SVG preview
+- Verified SVG export
+- Camera capture
+- Image upload
+- Threshold-based gasket detection
+- Hole detection
+- Calibration-based scan dimensions
+- JSON database import/export
+- Offline-capable PWA
+- Installable Android home-screen app
+- Service-worker caching
+- Automatic Render deployment from `main`
 
-Pattern priority:
+## Scan Setup
 
-1. exact `holePattern`
-2. `patternRef`
-3. fallback perimeter layout
+For better scan results:
 
-### SVG Preview and Download
-Generate an SVG using:
-
-- width
-- height
-- outline path
-- hole coordinates
-
-Export the SVG for:
-
-- Cricut
-- CNC
-- laser cutting
-- printing
-- manual tracing
-
-### Scan-to-Gasket Tools
-Built-in scan workflow supports:
-
-- Start Camera
-- Capture Photo
-- Stop Camera
-- Upload Image
-- Process Scan
-- Use Scan In SVG
-
-Adjustable scan controls:
-
-- Scan Threshold
-- Scale
-- Minimum Hole Area
-
-Visual scan tools include:
-
-- source preview
-- processed mask preview
-- scan status messages
-
-### JSON Database Import / Export
-The app supports:
-
-- importing a gasket JSON database
-- exporting the current gasket JSON database
-
-This makes the catalog expandable without rewriting the app every time.
-
----
-
-## Measurement & Geometry Trust
-
-This app now separates **reference data** from **cut-ready geometry**:
-
-- catalog part numbers and generic fastener patterns are reference/preview only unless exact geometry is explicitly marked `verified_exact`
-- SVG download stays disabled until the user confirms that the current dimensions and hole locations were measured or calibrated against the real physical part
-- changing width, height, or hole coordinates automatically clears verification
-- scan dimensions require an explicit pixels-per-mm calibration; there is no guessed default scale
-- unverified previews are watermarked `PREVIEW ONLY - VERIFY MEASUREMENTS`
-
-For production use, measure the real gasket or mating surface, enter or correct the geometry, verify it, then export the SVG.
-
-## Current Limitations
-
-This version is useful and working, but it is still growing.
-
-### Database Limitations
-- not every vehicle/application is included yet
-- some entries still use estimated geometry
-- some entries are broader fitment references rather than exact OEM geometry packs
-- exact OEM hole coordinate coverage is still limited
-
-### Geometry Limitations
-- some outlines are simplified
-- some entries rely on reusable fastener patterns
-- not every gasket has exact traced side-specific geometry yet
-
-### Scan Limitations
-- scan quality depends heavily on image quality
-- shadows and clutter can reduce accuracy
-- dark gaskets on dark surfaces can confuse detection
-- scan output should be treated as a starting point, not perfect measurement-grade data
-
-### Platform Limitations
-- GitHub Pages cannot directly write scan results back into the repo database
-- scanned geometry is not auto-saved into `gasket_database.json`
-- database updates still require export/import or manual edits
-
----
-
-## Scan Instructions
-
-### Best Results Setup
-For the best scan results:
-
-- place the gasket on a light, plain background
-- keep the gasket flat
-- take the photo from directly above
+- place the gasket flat
+- use a plain, contrasting background
+- photograph it directly from above
 - avoid strong shadows
-- fill most of the frame with the gasket
 - use bright, even lighting
-- keep the background uncluttered
+- fill most of the image with the gasket
+- include or measure a known real-world distance for calibration
 
-### Camera Scan Workflow
-1. Click **Start Camera**
-2. Position the gasket in frame
-3. Click **Capture Photo**
-4. Adjust **Scan Threshold** if needed
-5. Click **Process Scan**
-6. Review the processed mask
-7. Click **Use Scan In SVG**
+### Scan controls
 
-### Upload Image Workflow
-1. Click **Upload Image**
-2. Select a gasket photo
-3. Adjust **Scan Threshold** if needed
-4. Click **Process Scan**
-5. Review the processed mask
-6. Click **Use Scan In SVG**
+**Scan Threshold** determines how dark a pixel must be before the app considers it gasket material.
 
-### Scan Controls Explained
+**Calibration (pixels per mm)** converts image pixels into physical dimensions. This value must come from a real measured reference; do not guess it.
 
-#### Scan Threshold
-Controls how dark a pixel must be before the app treats it as gasket material.
+**Minimum Hole Area** filters small image noise that could otherwise be mistaken for a bolt hole.
 
-- lower value = stricter dark detection
-- higher value = more of the image becomes gasket material
+## Install as an App
 
-#### Scale
-Defines how many image pixels equal one geometry unit.
+### Android / Chrome
 
-This affects:
+1. Open https://gasket-maker-app.onrender.com
+2. Open Chrome's menu.
+3. Choose **Install app** or **Add to Home screen**.
+4. Launch Gasket Maker from the new app icon.
 
-- estimated width
-- estimated height
-- hole placement scaling
-
-#### Minimum Hole Area
-Filters out tiny noise so the app is less likely to mistake dust, texture, or small artifacts for bolt holes.
-
----
+The installed PWA runs in standalone mode and caches its core files for offline use.
 
 ## Project Structure
 
-### `index.html`
-Main UI layout for:
+- `index.html` — main user interface
+- `style.css` — responsive styling
+- `app.js` — catalog, scan, verification, and SVG-generation logic
+- `gasket_database.json` — reference gasket catalog
+- `manifest.webmanifest` — PWA metadata
+- `sw.js` — offline service worker
+- `icon-192.png` / `icon-512.png` — installable app icons
+- `www/` — synchronized Capacitor web assets
+- `android/` — native Android Capacitor project
 
-- part search
-- scan tools
-- catalog selector
-- info panel
-- geometry controls
-- SVG preview
+## Deployment
 
-### `style.css`
-Styles for:
+Production PWA is deployed as a Render static site:
 
-- layout
-- cards
-- search UI
-- scan panels
-- info boxes
-- preview area
+- Service: `gasket-maker-app`
+- Branch: `main`
+- Auto-deploy: enabled
+- URL: https://gasket-maker-app.onrender.com
 
-### `app.js`
-Main logic for:
+GitHub Pages also publishes the repository's `main` branch as a secondary web copy.
 
-- database loading
-- search
-- vehicle filtering
-- info panel updates
-- fastener pattern logic
-- SVG generation
-- camera scan processing
-- image upload scan processing
-- database import/export
+## Current Limitations
 
-### `gasket_database.json`
-Vehicle and gasket data used by the app.
+- The catalog is not a complete OEM gasket database.
+- Generic catalog patterns are references, not exact production geometry.
+- Image processing is intentionally lightweight and can be affected by shadows, clutter, surface texture, and poor contrast.
+- Scanning does not eliminate the need for physical measurement.
+- Exact OEM geometry should only be marked verified when supported by trustworthy dimensional source data or direct physical measurement.
+- Users should test-fit patterns before cutting expensive material.
 
----
+## Development
 
-## Database Format
+The project is intentionally simple and mostly client-side. No remote AI service is required to create manual measurement-based SVGs.
 
-Each entry in `gasket_database.json` looks like this:
+To test locally, serve the project directory with any static HTTP server. Camera access requires a secure context on normal browsers, so HTTPS deployment is recommended for mobile use.
 
-```json
-{
-  "make": "Ford",
-  "model": "F-150",
-  "year": 2015,
-  "engine": "5.0L V8",
-  "gasketType": "oil_pan",
-  "brand": "OEM Ford",
-  "partNumber": "FL3Z-6710-B",
-  "fitmentStatus": "verified",
-  "geometry": {
-    "width": 318,
-    "height": 216,
-    "patternRef": "oilpan_perimeter_20",
-    "outlinePath": "",
-    "holePattern": []
-  }
-}
+## License
+
+MIT
